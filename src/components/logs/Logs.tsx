@@ -2,14 +2,29 @@ import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import LogItem from "./LogItem";
 import Preloader from "../layout/Preloader";
-import PropTypes from "prop-types";
 import { getLogs } from "../../actions/logActions";
+import { RootState } from "../../reducers"; // Adjust path if necessary
 
-const Logs = ({ log: { logs, loading }, getLogs }) => {
+interface Log {
+  id: number;
+  message: string;
+  attention: boolean;
+  tech: string;
+  date: string;
+}
 
+interface LogsProps {
+  log: {
+    logs: Log[] | null;
+    loading: boolean;
+  };
+  getLogs: () => void;
+}
+
+const Logs: React.FC<LogsProps> = ({ log: { logs, loading }, getLogs }) => {
   useEffect(() => {
     getLogs();
-  }, []);
+  }, [getLogs]);
 
   if (loading || logs === null) {
     return <Preloader />;
@@ -29,12 +44,7 @@ const Logs = ({ log: { logs, loading }, getLogs }) => {
   );
 };
 
-Logs.propTypes = {
-  log: PropTypes.object.isRequired,
-  getLogs: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   log: state.log,
 });
 

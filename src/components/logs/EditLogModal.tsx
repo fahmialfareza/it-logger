@@ -1,31 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import PropTypes from "prop-types";
-import { addLog } from "../../actions/logActions";
+import { updateLog } from "../../actions/logActions";
 import TechSelectOptions from "../techs/TechSelectOptions";
 import M from "materialize-css/dist/js/materialize.min.js";
+import { RootState } from "../../reducers"; // Adjust path as needed
 
-const AddLogModal = ({ addLog }) => {
-  const [message, setMessage] = useState("");
-  const [attention, setAttention] = useState("");
-  const [tech, setTech] = useState("");
+interface Log {
+  id: number;
+  message: string;
+  attention: boolean;
+  tech: string;
+  date: Date;
+}
+
+interface EditLogModalProps {
+  current: Log | null;
+  updateLog: (log: Log) => void;
+}
+
+const EditLogModal: React.FC<EditLogModalProps> = ({ current, updateLog }) => {
+  const [message, setMessage] = useState<string>("");
+  const [attention, setAttention] = useState<boolean>(false);
+  const [tech, setTech] = useState<string>("");
+
+  useEffect(() => {
+    if (current) {
+      setMessage(current.message);
+      setAttention(current.attention);
+      setTech(current.tech);
+    }
+  }, [current]);
 
   const onSubmit = () => {
     if (message === "" || tech === "") {
       M.toast({ html: "Please enter a message and tech" });
     } else {
-      const newLog = {
+      const updLog: Log = {
+        id: current ? current.id : 0, // Ensure id is provided
         message,
         attention,
         tech,
         date: new Date(),
       };
 
-      addLog(newLog);
+      updateLog(updLog);
+      M.toast({ html: `Log updated by ${tech}` });
 
-      M.toast({ html: `Log added by ${tech}` });
-
-      // Clear field
+      // Clear fields
       setMessage("");
       setAttention(false);
       setTech("");
@@ -33,9 +54,9 @@ const AddLogModal = ({ addLog }) => {
   };
 
   return (
-    <div id="add-log-modal" className="modal" style={modalStyle}>
+    <div id="edit-log-modal" className="modal" style={modalStyle}>
       <div className="modal-content">
-        <h4>Enter System Log</h4>
+        <h4>Edit System Log</h4>
         <div className="row">
           <div className="input-field">
             <input
@@ -44,9 +65,6 @@ const AddLogModal = ({ addLog }) => {
               value={message}
               onChange={(event) => setMessage(event.target.value)}
             />
-            <label htmlFor="message" className="active">
-              Log Message
-            </label>
           </div>
         </div>
 
@@ -63,9 +81,6 @@ const AddLogModal = ({ addLog }) => {
               </option>
               <TechSelectOptions />
             </select>
-            <label htmlFor="message" className="active">
-              Log Message
-            </label>
           </div>
         </div>
 
@@ -77,8 +92,7 @@ const AddLogModal = ({ addLog }) => {
                   type="checkbox"
                   className="filled-in"
                   checked={attention}
-                  value={attention}
-                  onChange={(event) => setAttention(!attention)}
+                  onChange={() => setAttention(!attention)}
                 />
                 <span>Needs Attention</span>
               </label>
@@ -99,13 +113,13 @@ const AddLogModal = ({ addLog }) => {
   );
 };
 
-AddLogModal.propTypes = {
-  addLog: PropTypes.func.isRequired,
-};
-
-const modalStyle = {
+const modalStyle: React.CSSProperties = {
   width: "75%",
   height: "75%",
 };
 
-export default connect(null, { addLog })(AddLogModal);
+const mapStateToProps = (state: RootState) => ({
+  current: state.log.current,
+});
+
+export default connect(mapStateToProps, { updateLog })(EditLogModal);

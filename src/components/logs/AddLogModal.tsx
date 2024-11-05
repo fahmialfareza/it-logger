@@ -1,40 +1,41 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { connect } from "react-redux";
-import PropTypes from "prop-types";
-import { updateLog } from "../../actions/logActions";
+import { addLog } from "../../actions/logActions";
 import TechSelectOptions from "../techs/TechSelectOptions";
-
 import M from "materialize-css/dist/js/materialize.min.js";
 
-const EditLogModal = ({ current, updateLog }) => {
-  const [message, setMessage] = useState("");
-  const [attention, setAttention] = useState("");
-  const [tech, setTech] = useState("");
+interface AddLogModalProps {
+  addLog: (log: Log) => void;
+}
 
-  useEffect(() => {
-    if (current) {
-      setMessage(current.message);
-      setAttention(current.attention);
-      setTech(current.tech);
-    }
-  }, [current]);
+interface Log {
+  message: string;
+  attention: boolean;
+  tech: string;
+  date: Date;
+}
+
+const AddLogModal: React.FC<AddLogModalProps> = ({ addLog }) => {
+  const [message, setMessage] = useState<string>("");
+  const [attention, setAttention] = useState<boolean>(false);
+  const [tech, setTech] = useState<string>("");
 
   const onSubmit = () => {
     if (message === "" || tech === "") {
       M.toast({ html: "Please enter a message and tech" });
     } else {
-      const updLog = {
-        id: current.id,
+      const newLog: Log = {
         message,
         attention,
         tech,
         date: new Date(),
       };
 
-      updateLog(updLog);
-      M.toast({ html: `Log updated by ${tech}` })
+      addLog(newLog);
 
-      // Clear field
+      M.toast({ html: `Log added by ${tech}` });
+
+      // Clear fields
       setMessage("");
       setAttention(false);
       setTech("");
@@ -42,7 +43,7 @@ const EditLogModal = ({ current, updateLog }) => {
   };
 
   return (
-    <div id="edit-log-modal" className="modal" style={modalStyle}>
+    <div id="add-log-modal" className="modal" style={modalStyle}>
       <div className="modal-content">
         <h4>Enter System Log</h4>
         <div className="row">
@@ -53,6 +54,9 @@ const EditLogModal = ({ current, updateLog }) => {
               value={message}
               onChange={(event) => setMessage(event.target.value)}
             />
+            <label htmlFor="message" className="active">
+              Log Message
+            </label>
           </div>
         </div>
 
@@ -69,8 +73,8 @@ const EditLogModal = ({ current, updateLog }) => {
               </option>
               <TechSelectOptions />
             </select>
-            <label htmlFor="message" className="active">
-              Log Message
+            <label htmlFor="tech" className="active">
+              Technician
             </label>
           </div>
         </div>
@@ -83,8 +87,7 @@ const EditLogModal = ({ current, updateLog }) => {
                   type="checkbox"
                   className="filled-in"
                   checked={attention}
-                  value={attention}
-                  onChange={(event) => setAttention(!attention)}
+                  onChange={() => setAttention(!attention)}
                 />
                 <span>Needs Attention</span>
               </label>
@@ -105,18 +108,9 @@ const EditLogModal = ({ current, updateLog }) => {
   );
 };
 
-const modalStyle = {
+const modalStyle: React.CSSProperties = {
   width: "75%",
   height: "75%",
 };
 
-EditLogModal.propTypes = {
-  current: PropTypes.object,
-  updateLog: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = (state) => ({
-  current: state.log.current,
-});
-
-export default connect(mapStateToProps, { updateLog })(EditLogModal);
+export default connect(null, { addLog })(AddLogModal);

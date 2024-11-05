@@ -1,13 +1,32 @@
 import React, { useEffect } from "react";
 import { connect } from "react-redux";
-import PropTypes from "prop-types";
 import TechItem from "./TechItem";
 import { getTechs } from "../../actions/techActions";
+import { RootState } from "../../reducers"; // Adjust path if necessary
 
-const TechListModal = ({ getTechs, tech: { techs, loading } }) => {
+interface Tech {
+  id: number;
+  firstName: string;
+  lastName: string;
+}
+
+interface TechState {
+  techs: Tech[] | null;
+  loading: boolean;
+}
+
+interface TechListModalProps {
+  tech: TechState;
+  getTechs: () => void;
+}
+
+const TechListModal: React.FC<TechListModalProps> = ({
+  getTechs,
+  tech: { techs, loading },
+}) => {
   useEffect(() => {
     getTechs();
-  }, []);
+  }, [getTechs]);
 
   return (
     <div id="tech-list-modal" className="modal">
@@ -23,12 +42,7 @@ const TechListModal = ({ getTechs, tech: { techs, loading } }) => {
   );
 };
 
-TechListModal.propTypes = {
-  tech: PropTypes.object.isRequired,
-  getTechs: PropTypes.func.isRequired,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   tech: state.tech,
 });
 
