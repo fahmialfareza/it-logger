@@ -54,5 +54,9 @@
     "json-server": "^0.16.3",
     "typescript": "^3.9.10"
   },
-  "proxy": "http://localhost:5000"
+  "proxy": "http://localhost:5000",
+  "volta": {
+    "node": "18.16.0",
+    "pnpm": "8.6.0"
+  }
 }
